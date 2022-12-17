@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# go to top dir of this project, file names refer to that location
+cd `git rev-parse --show-toplevel`
+
+# check whether commit included .docx files that were converted to md
+if [ -a .commit-amend-markdown ]
+then
+    # add md files to commit
+    cat .commit-amend-markdown | xargs git add || {
+        echo "Git cannot add md files to amend commit";
+        exit 1;
+    }
+
+    # delete file with list of md files to avoid infinite loop
+    rm .commit-amend-markdown
+
+    # add .md file by amending commit
+    git commit --amend -C HEAD --no-verify || {
+        echo "Git cannot amend the commit";
+        exit 1;
+    }
+fi
+exit
