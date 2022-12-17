@@ -1,3 +1,30 @@
+# Few Books Config
+
+## Introduction
+Keeping documents in version control isn't always the easiest task. If you write them in a plain text format (e.g. markdown) then everything is grand. But most document formats aren't plain text but binary (e.g. Microsoft Word). They can still be added to version control but one of the big advantages of Git is the ability to "diff" (see differences between two versions of the same document).
+
+This repo includes some files to assist writers who are using Word and it's binary format in adding their files to version control with the benefit of "diffing."
+
+## TODO
+- Look at using lefthook to remove manual placement of files in `.git/hooks`.
+
+## Instructions
+### Do It Once Per Computer
+1. Install pandoc
+2. Install node.js
+
+## Do It For Each New Document Repo
+1. Create a new repo for your document(s).
+2. Copy `.gitattributes`, `.gitconfig`, `.gitignore-template`, and .`package.json-template` into your new document repo.
+3. Rename `.gitignore-template` to `.gitignore` and follow the instructions in the file to ensure the Windows document temporary file is not added to version control.
+4. Rename `package.json-template` to `package.json`. Change the `name` value to reflect your document(s) and the "repository" "url" to point to your repository for the document(s).
+5. Copy `post-commit` and `pre-commit` into the `.git/hooks` directory within your repo.
+
+## Acknowledgments
+The core of this software is the pre-commit and post-commit hooks which were created by Ramon Casero as part of Gerardus. See the [license file](license.md) for details.
+
+I used several different articles to get `.gitattributes` and `.gitconfig` files that worked, unfortunately I do not have records of which articles. My sincere thanks to their authors.
+
 # SUMMARY
 
 "pre-commit-git-diff-docx.sh:" Small git (https://git-scm.com/) hook. It works in combination with another hook, "post-commit-git-diff-docx.sh".
