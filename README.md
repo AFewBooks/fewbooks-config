@@ -1,62 +1,70 @@
 # Few Books Config
 
-## Introduction
-Keeping documents in version control isn't always the easiest task. If you write them in a plain text format (e.g. markdown) then everything is grand. But most document formats aren't plain text but binary (e.g. Microsoft Word). They can still be added to version control but one of the big advantages of Git is the ability to "diff" (see differences between two versions of the same document).
 
-This repo includes some files to assist writers who are using Word and it's binary format in adding their files to version control with the benefit of "diffing."
+# Introduction
 
-## TODO
-- Look at using lefthook to remove manual placement of files in `.git/hooks`.
+I love version control. It provides so much safety and flexibility. Unfortunately, version control (with Git) of documents isn't always intuitive. This is because many documents are saved in a binary format.
 
-## Instructions
-### Do It Once Per Computer
-1. Install pandoc
-2. Install node.js
+Adding the documents to Git works in the same way as for any other file - but Git can't provide useful diffs (the ability to compare between two versions of the same document) due to the files being binary. 
+
+This repo includes some files to assist those creating documents with Microsoft Word and using it's binary format gain the benefit of clear diffing.
+
+**Side Note**: If you don't need the formatting options provided by Word I highly recommend using markdown directly for composing (at least the original version of) the document and avoiding all this complexity. You can always uses pandoc later to convert the file from markdown to Microsoft Word (or any of a multitude of other formats).
+
+
+# Instructions
+
+
+## Do It Once Per Computer
+
+1. Install [pandoc](http://pandoc.org/)
+
 
 ## Do It For Each New Document Repo
-1. Create a new repo for your document(s).
-2. Copy `.gitattributes`, `.gitconfig`, `.gitignore-template`, and .`package.json-template` into your new document repo.
-3. Rename `.gitignore-template` to `.gitignore` and follow the instructions in the file to ensure the Windows document temporary file is not added to version control.
-4. Rename `package.json-template` to `package.json`. Change the `name` value to reflect your document(s) and the "repository" "url" to point to your repository for the document(s).
-5. Copy `post-commit` and `pre-commit` into the `.git/hooks` directory within your repo.
 
-## Acknowledgments
+1. Create a new repo for your document(s).
+2. Copy `.gitattributes`, `.gitconfig`, and `.gitignore-template` into your new repo.
+3. Rename `.gitignore-template` to `.gitignore` and follow the instructions in the file to ensure the Windows document temporary file is not added to version control.
+4. Copy the `.git-hooks` directory into the root of you repository. This directory contains the hooks `pre-commit` and `post-commit`.
+5. Open the direct `repo-name/.git/hooks` in the terminal and create soft links to the files in `.git-hooks`:
+    - ln -s ../../pre-commit pre-commit
+    - ln -s ../../post-commit post-commit
+
+
+### Alternative Method
+
+Instead of doing steps 4 and 5 above you can copy the files `pre-commit` and `post-commit` directly into the `.git/hooks` directory.
+
+- Why? Some people dislike having a `.git-hooks` directory in the root of their repo. Placing the files directly in `.git/hooks` avoids creating this `.git-hooks` directory.
+- Why not? For people like myself who need visual cues to remind them to perform certain tasks having the `.git-hooks` folder in the root of the repo is a visual reminder to setup these scripts.
+
+
+## Troubleshooting
+
+- Make sure that the `pre-commit` and `post-commit` files are executable: 
+    `chmod u+x pre-commit post-commit.sh`
+- Make sure pandoc is installed on your computer.
+
+
+# How It Works
+
+When you make a commit Git runs any `pre-commit` hooks. Our `pre-commit` hook makes a Markdown format copy (`.md`) of any `.docx` files in the commit. It then lists the `.md` file names in a temorary file called `.commit-amend-markdown.`
+
+After the commit is completed Git calls the `post-commit` hook. This hook checks for the temporary file `.commit-amend-markdown`. If the file exists, the hook amends the commit by adding the `.md` files to it. 
+
+
+# Acknowledgments
+
 The core of this software is the pre-commit and post-commit hooks which were created by Ramon Casero as part of Gerardus. See the [license file](license.md) for details.
 
 I used several different articles to get `.gitattributes` and `.gitconfig` files that worked, unfortunately I do not have records of which articles. My sincere thanks to their authors.
 
-# SUMMARY
 
-"pre-commit-git-diff-docx.sh:" Small git (https://git-scm.com/) hook. It works in combination with another hook, "post-commit-git-diff-docx.sh".
+# TODO
 
-Together, they keep a Markdown (.md) copy of .docx files so that git diffs of the .md files show the changes in the document (as .docx files are binaries, they produce no diffs that can be checked in emails or in the repository's commit page).
+- Look at using lefthook to remove manual placement of files in `.git/hooks`.
+- Look at using a batch script to handle moving the files and/or creating soft links.
 
-# DEPENDENCIES
-- pandoc (http://pandoc.org/)
 
-# INSTALLATION
-
-1) put both scripts in the hooks directory of each of your git projects that use .docx files. There are several options, e.g. you can put them in ~/Software and soft link to them from the hooks directory, e.g.
-    
-    cd $PROJECTPATH/.git/hooks
-    ln -s ~/Software/pre-commit-git-diff-docx.sh pre-commit
-    ln -s ~/Software/post-commit-git-diff-docx.sh post-commit
-
-    Or you can make a copy in the hooks directory
-
-    cd $PROJECTPATH/.git/hooks
-    cp ~/Software/pre-commit-git-diff-docx.sh pre-commit
-    cp ~/Software/post-commit-git-diff-docx.sh post-commit
-
-2) make sure that the scripts are executable
-    cd ~/Software
-    chmod u+x pre-commit-git-diff-docx.sh post-commit-git-diff-docx.sh
-
-# DETAILS
-This script makes a Markdown format copy (.md) of any .docx files in the commit. It then lists the .md file names in a temp file called .commit-amend-markdown.
-
-After the commit, the post-commit hook "post-commit-git-diff-docx.sh" will check for this file. If it exists, it will amend the commit adding the names of the .md files.
-
-The reason why we cannot simply add the .md files here is because `git add` adds files to the next commit, not the current one.
-
-This script requires pandoc (http://pandoc.org/) to have been installed in the system.
+# Other Notes
+- The reason why we cannot simply add the `.md` files during the `pre-commit` script is because `git add` adds files to the next commit, not the current one.
